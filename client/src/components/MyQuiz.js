@@ -10,7 +10,6 @@ function MyQuiz(props) {
   const id = props.id.split(" ")[0];
   const titolo = props.id.split(" ")[1];
   const quiz = domande.filter((d) => d.id_quiz == id);
-  console.log(quiz);
   return (
     <>
       <h5>

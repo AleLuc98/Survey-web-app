@@ -1,6 +1,7 @@
 import {React} from 'react';
-import { Navbar, Nav, Dropdown } from 'react-bootstrap';
+import { Navbar, Nav, Dropdown} from 'react-bootstrap';
 import { logo, userIcon } from '../icons';
+import { Link, Route, useLocation, Redirect,useHistory } from 'react-router-dom';
 
 function MyNavbar(props){
 
@@ -20,15 +21,11 @@ function MyNavbar(props){
                             <Dropdown.Header>
                                 Hi, {props.user.name}
                             </Dropdown.Header> 
-                            <Dropdown.Item>
-                                <Nav.Link style={{color: "black"}} onClick = {()=>props.logout()}>
+                            <Dropdown.Item style={{color: "black"}} onClick = {()=>props.logout()}>
                                     Logout
-                                </Nav.Link>
                             </Dropdown.Item> </>  : 
-                        <Dropdown.Item>
-                            <Nav.Link style={{color: "black"}} onClick = {()=>props.login()}>
+                        <Dropdown.Item as={Link} style={{color: "black"}} to="/login" onClick={()=>props.login()}>
                                 Login
-                            </Nav.Link>
                         </Dropdown.Item> }
                         </Dropdown.Menu>
                     </Dropdown>
