@@ -1,24 +1,36 @@
-import logo from './logo.svg';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
+import MyNavbar from './components/MyNavbar'
+import QuizViewer from './components/QuizViewer'
+import './components/components.css'
+import {Container, Row, Col} from 'react-bootstrap'
+import React, { useState, useEffect } from 'react'
+import {BrowserRouter as Router, Redirect, Route } from 'react-router-dom';
+
 
 function App() {
-  return (
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  const logoutHandler = async () => {
+    await fetch('/api/sessions/current', { method: 'DELETE' });
+    setLoggedIn(false)
+  }
+    return (
+    <Router>
+      <Route exact path='/'><Redirect to='All'></Redirect></Route>
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <MyNavbar title="Questionario" user = {loggedIn} logout = {logoutHandler}>
+          </MyNavbar> 
+        <Container fluid>
+         
+        <Row className="app-body">
+            <QuizViewer>
+            </QuizViewer>
+        </Row>
+      </Container>
+</div>
+      </Router>
+
   );
 }
 

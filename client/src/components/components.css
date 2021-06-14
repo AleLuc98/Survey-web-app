@@ -1,0 +1,54 @@
+/*===============APP.js====================*/
+.container-fluid{
+  padding-left:0px !important;
+  padding-right:0px !important;
+  height: 100%;
+}
+.app-body{
+  padding-top: 70px ;
+  height: 100%;
+  margin: 2%;
+  justify-content: center;
+}
+
+.content{
+  padding: 2%  !important;
+  margin : 0;
+}
+
+/*======== QuizViewer Style Sheet ==========*/
+.content-body{
+    padding: 1%;
+    border-style: hidden;
+}
+.add-task-btn{
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    border-radius: 100% !important;
+    margin-right: 1%;
+    margin-bottom: 1%;
+}
+.task-item{
+    padding-left: 4%;
+}
+.control-group{
+    display: flex;
+    justify-content:flex-end;
+}
+
+.form-check-input  {
+    margin-top :1px !important;
+    
+}
+
+/*======== Navbar Style Sheet ==========*/
+
+.navbar{
+    display: flex;
+    justify-content: space-between !important;
+}
+
+.navbar-brand{
+    flex: 2;
+}
