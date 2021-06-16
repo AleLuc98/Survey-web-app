@@ -1,16 +1,20 @@
 import { ListGroup, Modal, Button, Form , Alert, Table, Col} from 'react-bootstrap'
 import React, { useState } from 'react'
 import { arrowIcon } from '../icons';
-import { Link, Route, Router, useLocation, Redirect,useHistory } from 'react-router-dom';
+import { Link, Route, Router, useLocation, Redirect, useHistory } from 'react-router-dom';
 import API from '../API';
 
 
 function QuizViewer(props) {
+  const history = useHistory()
+ 
+
     return (
       <>
         <Route path="/confirm_new_quiz">
             <QuizForm show={true}
-                    onSave={(res)=>props.setQuiz(res)}>
+                    onSave={(res)=>props.setQuiz(res)}
+                    onHide={() =>{history.push('/')}}>
          </QuizForm>
          </Route>
         <h5>I miei questionari </h5>
@@ -91,8 +95,8 @@ function QuizForm(props) {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Link to='/'><Button variant="secondary">Close</Button></Link>
-                    <Button variant="primary" onClick = {(e)=>handleSubmit(e)}>Crea un nuovo quiz</Button>
+                    <Link to='/'><Button variant="outline-grey">Close</Button></Link>
+                    <Button variant="outline-danger" onClick = {(e)=>handleSubmit(e)}>Crea un nuovo quiz</Button>
                 </Modal.Footer>
         </Modal>
         </>

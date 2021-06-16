@@ -12,7 +12,7 @@ const risposte = risposte_chiuse.filter((r)=>r.id_dom==props.domanda.id)
         <Card.Body>
           <Card.Title>{props.domanda.testo} </Card.Title>
           {props.domanda.tipo === "aperta"  ? <FormControl as="textarea"/> :
-            <Form.Group>
+            <Form.Group className="centered-checkbox">
                 {risposte.map((r)=>
               <Form.Check
                 type="checkbox"

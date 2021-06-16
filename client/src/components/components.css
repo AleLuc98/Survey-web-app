@@ -85,6 +85,11 @@
     background-color: transparent;
 }
 
+.answers{
+    display: flex;
+    align-items: center;
+}
+
 /*========MyQuestion Style Sheet ==========*/
 
 .centered-checkbox{

@@ -59,7 +59,7 @@ function App() {
               <Route path="/quiz">
                 <MyQuiz id={quizSelection} user={loggedIn}></MyQuiz>
               </Route>
-              <Route path="/new_quiz">
+              <Route path={["/new_quiz","/add_question"]}>
                 <MyQuiz id={quizSelection} user={loggedIn}></MyQuiz>
               </Route>
               <Route path="/">

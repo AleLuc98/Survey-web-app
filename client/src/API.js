@@ -24,7 +24,7 @@ async function logIn(credentials) {/*
     return "Alessandro";
 }
 
-async function getLastID() {/*
+async function getLastIDQuiz() {/*
     let response = await fetch(BASEURL +'/getID', {
       method: 'GET',
       headers: {
@@ -47,7 +47,53 @@ async function getLastID() {/*
     return 6;
 }
 
+async function getLastIDDomande() {/*
+  let response = await fetch(BASEURL +'/getID', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if(response.ok) {
+    const ID = await response.json();
+    return ID;
+  } 
+  else {
+    try {
+      const errDetail = await response.json();
+      throw errDetail.message;
+    }
+    catch(err) {
+      throw err;
+    }
+  }*/
+  return 6;
+}
+
+async function aggiugniDomanda() {/*
+  let response = await fetch(BASEURL +'/getID', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if(response.ok) {
+    const ID = await response.json();
+    return ID;
+  } 
+  else {
+    try {
+      const errDetail = await response.json();
+      throw errDetail.message;
+    }
+    catch(err) {
+      throw err;
+    }
+  }*/
+  return 6;
+}
+
   
   
-  const API = {logIn, getLastID};
+  const API = {logIn, getLastIDQuiz};
   export default API;
