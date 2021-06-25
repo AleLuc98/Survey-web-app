@@ -31,7 +31,7 @@ function App() {
   }
 
   const logoutHandler = async () => {
-    //await fetch('/api/sessions/current', { method: 'DELETE' });
+    await fetch('/api/sessions/current', { method: 'DELETE' });
     setLoggedIn(false)
   }
     return (
@@ -52,7 +52,7 @@ function App() {
                   {loggedIn ? (
                     <Redirect to="/" />
                   ) : (
-                    <LoginForm login={loginHandler} />
+                    <LoginForm errors={errors} login={loginHandler} />
                   )}
                 </>
               </Route>
@@ -65,12 +65,10 @@ function App() {
               <Route path="/">
                 {!loggedIn ? (
                   <QuizSelector
-                    data={quiz}
                     setQuiz={setQuizSelection}
                   ></QuizSelector>
                 ) : (
                   <QuizViewer
-                    data={quiz}
                     setQuiz={setQuizSelection}
                   ></QuizViewer>
                 )}

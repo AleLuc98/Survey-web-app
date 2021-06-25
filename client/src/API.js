@@ -1,6 +1,6 @@
 const BASEURL = '/api';
 
-async function logIn(credentials) {/*
+async function logIn(credentials) {
     let response = await fetch(BASEURL +'/sessions', {
       method: 'POST',
       headers: {
@@ -20,8 +20,51 @@ async function logIn(credentials) {/*
       catch(err) {
         throw err;
       }
-    }*/
-    return "Alessandro";
+    }
+}
+
+const getQuiz = async () => {
+  let response = await fetch(BASEURL +'/quiz', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if(response.ok) {
+    const quiz = await response.json();
+    return quiz
+  } 
+  else {
+    try {
+      const errDetail = await response.json();
+      throw errDetail.message;
+    }
+    catch(err) {
+      throw err;
+    }
+  }
+}
+
+async function getMyQuiz(id) {
+  let response = await fetch(BASEURL +'/quiz', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if(response.ok) {
+    const quiz = await response.json();
+    return quiz
+  } 
+  else {
+    try {
+      const errDetail = await response.json();
+      throw errDetail.message;
+    }
+    catch(err) {
+      throw err;
+    }
+  }
 }
 
 async function getLastIDQuiz() {/*
@@ -95,5 +138,5 @@ async function aggiugniDomanda() {/*
 
   
   
-  const API = {logIn, getLastIDQuiz};
+  const API = {logIn, getLastIDQuiz, getQuiz, getMyQuiz};
   export default API;

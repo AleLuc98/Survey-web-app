@@ -1,7 +1,7 @@
 import {React} from 'react';
 import { Navbar, Nav, Dropdown} from 'react-bootstrap';
 import { logo, userIcon } from '../icons';
-import { Link, Route, useLocation, Redirect,useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function MyNavbar(props){
 
@@ -17,13 +17,10 @@ function MyNavbar(props){
                             {userIcon}
                         </Dropdown.Toggle>
                          <Dropdown.Menu style={{left:"-100px", fontSize:"14px"}}>
-                         {props.user ? <>
-                            <Dropdown.Header>
-                                Hi, {props.user.name}
-                            </Dropdown.Header> 
+                         {props.user ? 
                             <Dropdown.Item style={{color: "black"}} onClick = {()=>props.logout()}>
                                     Logout
-                            </Dropdown.Item> </>  : 
+                            </Dropdown.Item>  : 
                         <Dropdown.Item as={Link} style={{color: "black"}} to="/login" onClick={()=>props.login()}>
                                 Login
                         </Dropdown.Item> }

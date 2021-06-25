@@ -2,8 +2,8 @@ import { Form, Button, Alert, Col, Container, Row } from 'react-bootstrap';
 import { useState } from 'react';
 
 function LoginForm(props) {
-  const [username, setUsername] = useState('student@studenti.polito.it');
-  const [password, setPassword] = useState('student');
+  const [username, setUsername] = useState();
+  const [password, setPassword] = useState();
   const [errorMessage, setErrorMessage] = useState('') ;
   
   const handleSubmit = (event) => {
@@ -11,24 +11,23 @@ function LoginForm(props) {
       setErrorMessage('');
       const credentials = { username: username, password: password };
       
-      // SOME VALIDATION, ADD MORE!!!
       let valid = true;
-      if(username === '' || password === '' || password.length < 6)
-          valid = false;
+      if (username === '' || password === '' || password.length < 6) {
+        valid = false;
+        setErrorMessage('Email cannot be empty and password must be at least six character long.');
+      }
       
       if(valid)
       {
-        props.login(credentials);
-      }
-      else {
-        // show a better error message...
-        setErrorMessage('Error(s) in the form, please fix it.')
+        props.login(credentials)
+        .catch( (err) => { setErrorMessage(err); } )
       }
   };
 
   return (
         <Form>
-          {errorMessage ? <Alert variant="danger">{errorMessage}</Alert> : ""}
+        {(props.errors && props.errors.type === "login" && errorMessage === "") ?  <Alert variant='danger'>{"Incorrect username/password"}</Alert> : ''}
+        {errorMessage.count > 0 ? <Alert variant='danger'>{"Some errors occured, please check the prompted fields"}</Alert> : ''}
           <Form.Group controlId="username">
             <Form.Label>email</Form.Label>
             <Form.Control
@@ -48,14 +47,6 @@ function LoginForm(props) {
           <Button variant="outline-danger" onClick={handleSubmit}>Login</Button>
         </Form>
   );
-}
-
-function LogoutButton(props) {
-  return(
-    <Col>
-      <Button variant="outline-primary" onClick={props.logout}>Logout</Button>
-    </Col>
-  )
 }
 
 export { LoginForm };
