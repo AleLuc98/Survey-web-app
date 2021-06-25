@@ -46,7 +46,7 @@ const getQuiz = async () => {
 }
 
 async function getMyQuiz(id) {
-  let response = await fetch(BASEURL +'/quiz', {
+  let response = await fetch(BASEURL +'/myquiz', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

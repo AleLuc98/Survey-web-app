@@ -73,6 +73,11 @@ app.get('/api/quiz',(req,res) => {
 }
 )
 
+app.get('/api/myquiz', isLoggedIn, (req,res) => {
+  quizDao.getMyQuiz(req.user).then(response => res.send(response)).catch(() => res.status(500).end());
+}
+)
+
 /*** USER APIs ***/
 
 
