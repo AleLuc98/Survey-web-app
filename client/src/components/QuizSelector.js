@@ -4,7 +4,7 @@ import { arrowIcon } from '../icons';
 import { Link, Route, useLocation, Redirect,useHistory } from 'react-router-dom';
 import API from '../API';
 
-function QuizSelector(props) {
+function QuizSelector() {
     const [quiz,setQuiz] = useState();
     const [loading, setLoading ] = useState(true)
 
@@ -41,7 +41,7 @@ function QuizSelector(props) {
                         <tr key={q.id}>
                             <td>{q.id}</td>
                             <td>{q.titolo}</td>
-                            <td><Link to="/quiz" onClick={()=>props.setQuiz(q.id+" "+q.titolo)}><Button variant="outline-grey">
+                            <td><Link to={"/quiz_"+q.id}><Button variant="outline-grey">
                             {arrowIcon}</Button></Link></td>
                         </tr>                        
                     )}   

@@ -78,6 +78,31 @@ app.get('/api/myquiz', isLoggedIn, (req,res) => {
 }
 )
 
+app.get('/api/quiz_:id', (req,res) => {
+  quizDao.getQuizQuestions(req.params.id).then(response => res.send(response)).catch(() => res.status(500).end());
+}
+)
+
+app.get('/api/quizTitle_:id', (req,res) => {
+  quizDao.getQuizTitle(req.params.id).then(response => res.send(response)).catch(() => res.status(500).end());
+}
+)
+
+app.get('/api/answers_:id', (req,res) => {
+  quizDao.getAnswers(req.params.id).then(response => res.send(response)).catch(() => res.status(500).end());
+}
+)
+
+app.get('/api/getIDQuiz', (req,res) => {
+  quizDao.getIDQuiz().then(response => res.send(response)).catch(() => res.status(500).end());
+}
+)
+
+app.post('/api/pubblicaQuiz', (req,res) => {
+  quizDao.pubblicaQuiz(req.body.title,req.user).then(response => console.log(response)).catch(() => res.status(500).end());
+}
+)
+
 /*** USER APIs ***/
 
 

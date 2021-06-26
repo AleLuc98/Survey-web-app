@@ -67,76 +67,115 @@ async function getMyQuiz(id) {
   }
 }
 
-async function getLastIDQuiz() {/*
-    let response = await fetch(BASEURL +'/getID', {
-      method: 'GET',
+
+const getQuizQuestions = async (id) => {
+  let response = await fetch(BASEURL +'/quiz_'+id, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if(response.ok) {
+    const questions = await response.json();
+    return questions
+  } 
+  else {
+    try {
+      const errDetail = await response.json();
+      throw errDetail.message;
+    }
+    catch(err) {
+      throw err;
+    }
+  }
+}
+
+
+const getQuizTitle = async (id) => {
+  let response = await fetch(BASEURL +'/quizTitle_'+id, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if(response.ok) {
+    const title = await response.text();
+    return title
+  } 
+  else {
+    try {
+      const errDetail = await response.json();
+      throw errDetail.message;
+    }
+    catch(err) {
+      throw err;
+    }
+  }
+}
+
+const getAnswers = async (id) => {
+  let response = await fetch(BASEURL +'/answers_'+id, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if(response.ok) {
+    const answers = await response.json();
+    return answers
+  } 
+  else {
+    try {
+      const errDetail = await response.json();
+      throw errDetail.message;
+    }
+    catch(err) {
+      throw err;
+    }
+  }
+}
+
+const pubblicaQuiz = async (title, quiz) => {
+  let response = await fetch(BASEURL + '/pubblicaQuiz', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({title: title}),
+  });
+  if (response.ok) {
+    /*response = await fetch(BASEURL + "/pubblicaDomande", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify(quiz),
     });
-    if(response.ok) {
-      const ID = await response.json();
-      return ID;
-    } 
-    else {
+    if (response.ok) {
+      return true;
+    } else {
       try {
         const errDetail = await response.json();
         throw errDetail.message;
-      }
-      catch(err) {
+      } catch (err) {
         throw err;
       }
     }*/
-    return 6;
-}
-
-async function getLastIDDomande() {/*
-  let response = await fetch(BASEURL +'/getID', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  if(response.ok) {
-    const ID = await response.json();
-    return ID;
-  } 
-  else {
+    return true
+  } else {
     try {
       const errDetail = await response.json();
       throw errDetail.message;
-    }
-    catch(err) {
+    } catch (err) {
       throw err;
     }
-  }*/
-  return 6;
-}
+  }
+};
 
-async function aggiugniDomanda() {/*
-  let response = await fetch(BASEURL +'/getID', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  if(response.ok) {
-    const ID = await response.json();
-    return ID;
-  } 
-  else {
-    try {
-      const errDetail = await response.json();
-      throw errDetail.message;
-    }
-    catch(err) {
-      throw err;
-    }
-  }*/
-  return 6;
-}
+
+
 
   
   
-  const API = {logIn, getLastIDQuiz, getQuiz, getMyQuiz};
+const API = {logIn, getQuiz, getQuizTitle, getMyQuiz, getQuizQuestions, getAnswers, pubblicaQuiz};
   export default API;

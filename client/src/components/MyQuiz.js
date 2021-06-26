@@ -4,11 +4,12 @@ import {
   Button,
   Form,
   Alert,
-  Table,
+  Row,
   Container,
   Card,
+  Spinner
 } from "react-bootstrap";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { confirmIcon, homeIcon, plusIcon } from "../icons";
 import {
   Link,
@@ -19,25 +20,70 @@ import {
 } from "react-router-dom";
 import { domande, risposte } from "../FakeQuiz";
 import Myquestion from "./MyQuestion";
+import API from '../API';
 
+function MyQuiz(props) {
+  const history = useHistory();
+  const location = useLocation();
+  const [quiz, setQuiz] = useState([]);
+  const [loading, setLoading] = useState(true)
+  const [title, setTitle] = useState();
+  const [errorMessage, setErrorMessage] = useState('') ;
+  const id = location.pathname.split("_")[1]
+  
 
-function saveHandler(id, id_q, testo, min ,max, tipo) {
+  useEffect(() => {
+    const inizializeQuiz = async () => {
+        const titolo = await API.getQuizTitle(id);
+        setTitle(titolo);
+        const response = await API.getQuizQuestions(id);
+        setQuiz(response)
+        setLoading(false)   
+     }
+    if(id!=="quiz"&&id!=="question")
+      inizializeQuiz()
+    setLoading(false)   
+ },[id])
+
+ function saveHandler(id_q, testo, min ,max, tipo,risposte) {
   let domanda = {
-    id:id,
+    //Id used to link answers to the question locally
+    id: quiz.length+1,
     id_quiz:id_q,
     testo:testo,
     min:min,
     max:max,
-    tipo:tipo
+    tipo:tipo,
+    position: quiz.length+1,
+    risposte: risposte
   }
-  domande.push(domanda)
+  setQuiz(oldQuiz=>[...oldQuiz,domanda])
 }
 
-function MyQuiz(props) {
-  const history = useHistory();
-  const id = props.id.split(" ")[0];
-  const titolo = props.id.split(" ")[1];
-  const quiz = domande.filter((d) => d.id_quiz == id);
+const handleSubmit = (event) => {
+  event.preventDefault();
+  setErrorMessage("");
+  let valid = true;
+  if (title === "" || title == undefined) {
+    valid = false;
+    setErrorMessage(
+      "Il titolo non può essere vuoto"
+    );
+  }
+    if (quiz.length === 0) {
+      valid = false;
+      setErrorMessage(
+        "Deve esserci almeno una domanda"
+      );
+  }
+
+  if (valid) {
+    API.pubblicaQuiz(title,quiz).catch((err) => {
+    setErrorMessage(err);
+    }).then(location.pathname.push("/"));
+  }
+};
+
   return (
     <>
       <Route path="/add_question">
@@ -50,15 +96,30 @@ function MyQuiz(props) {
           }}
         ></QuestionForm>
       </Route>
-      <h5>
-        Quiz {id}: {titolo}
-      </h5>
+      
+        {id==="quiz"||id==="question" ? <Form.Group>
+              <Form.Label>Titolo</Form.Label>
+              <Form.Control
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                type="text"
+              ></Form.Control>
+            </Form.Group> :
+        <h5>
+        Quiz {id}: {title}
+        </h5>
+        }
       <br></br>
       <br></br>
       <Container fluid className="card-group">
-        {quiz.map((d) => (
+      {errorMessage.length > 0 ? <Alert variant='danger'>{errorMessage}</Alert> : ''}
+      {loading ? (
+      <Spinner animation="border" role="status">
+                  <span className="sr-only">Loading...</span>
+                </Spinner>) :(
+        quiz.map((d) => (
           <Myquestion domanda={d} key={d.id}></Myquestion>
-        ))}
+        )))}
         <Card.Footer>* indica la domanda obbligatoria</Card.Footer>
       </Container>
       <Link to="/">
@@ -73,7 +134,7 @@ function MyQuiz(props) {
         </Link>
       ) : null}
       <Link to="/">
-        <Button variant="outline-danger">Submit</Button>{" "}
+        <Button variant="outline-danger" onClick={handleSubmit}>Pubblica</Button>{" "}
       </Link>
     </>
   );
@@ -108,9 +169,21 @@ function QuestionForm(props) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (testo === "") setErrorMsg("INVALID_TEXT");
-    else {
-      onSave(6,props.id_quiz,testo, min, max, tipo);
+    let valid = true;
+    if (testo === "") {
+      valid= false
+      setErrorMsg("Inserire il testo della domanda");
+    }
+    if (numeroRisposte>0){
+      if ((risposte.length!=numeroRisposte)||(Array.from(risposte).some((el)=>el[1]==="")))
+      {
+        valid=false
+        setErrorMsg("Completare tutte le opzioni della risposte chiuse");
+      }
+    }
+    if (valid)
+    {
+      onSave(props.id_quiz,testo, min, max, tipo,Array.from(risposte).map((r)=>{let risposta = {id:r[0],testo:r[1]};return risposta}));
       setSubmitted(true);
     }
   };
@@ -127,7 +200,7 @@ function QuestionForm(props) {
         centered
       >
         <Modal.Header>
-          <Modal.Title>Crea un nuovo quiz</Modal.Title>
+          <Modal.Title>Crea una nuova domanda</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -164,6 +237,20 @@ function QuestionForm(props) {
             </Form.Group>
             {tipo === "chiusa" ? (
               <>
+              <Form.Group>
+                <Form.Label>Numero minimo di riposte &nbsp;&nbsp;</Form.Label>
+                <Form.Control
+                value={min}
+                onChange={(e) => setMin(e.target.value)}
+                type="number"
+              ></Form.Control>
+              <Form.Label>Numero massimo di riposte &nbsp;&nbsp;</Form.Label>
+                <Form.Control
+                value={max}
+                onChange={(e) => setMax(e.target.value)}
+                type="number"
+              ></Form.Control>
+              </Form.Group>
                 <Form.Group className="answers">
                   <Form.Label>Numero di opzioni (massimo 10) &nbsp;&nbsp;</Form.Label>
                   <Form.Control 
@@ -186,11 +273,7 @@ function QuestionForm(props) {
                     {confirmIcon}{" "}
                   </Button>
                 </Form.Group>
-              </>
-            ) : null}
-            {console.log(risposte)}
-            {Array.from(risposte).map((el) =>
-              <>
+                {Array.from(risposte).map((el) =>
                 <Form.Group key={el[0]} className="answers">
                   <Form.Check disabled inline type="checkbox"></Form.Check>
                   <Form.Control
@@ -201,7 +284,17 @@ function QuestionForm(props) {
                     type="text"
                   ></Form.Control>
                 </Form.Group>
+            )}
               </>
+            ) : (
+              <Form.Group>
+              <Form.Check
+              onChange={(e) => {e.target.checked===true ? setMin(1) : setMin(0) }}
+              type="checkbox"
+              label="La domanda è obbligatoria?"
+            ></Form.Check>
+             </Form.Group>
+
             )}
           </Form>
         </Modal.Body>

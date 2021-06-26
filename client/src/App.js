@@ -15,7 +15,6 @@ import { LoginForm } from './components/LoginComponent';
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
-  const [quizSelection, setQuizSelection] = useState();
   const [errors, setErrors] = useState(false);
 
   const loginHandler = async (credentials) => {
@@ -23,7 +22,6 @@ function App() {
       const user =  await API.logIn(credentials);
       setLoggedIn(user)      
       setErrors(false)
-      //setRefresh(true)
     }
     catch(err) {
       setErrors({message: err, type: "login"})
@@ -43,7 +41,7 @@ function App() {
             <MyNavbar
                 title="Questionario"
                 user={loggedIn}
-                logout={logoutHandler}
+                logout={()=> {logoutHandler(); <Redirect to="/" />}}
                 login={() => <Redirect to="/login" />}
               ></MyNavbar>
             <Switch>
@@ -56,20 +54,24 @@ function App() {
                   )}
                 </>
               </Route>
-              <Route path="/quiz">
-                <MyQuiz id={quizSelection} user={loggedIn}></MyQuiz>
+              <Route path="/quiz_:id">
+                <MyQuiz user={loggedIn}></MyQuiz>
               </Route>
               <Route path={["/new_quiz","/add_question"]}>
-                <MyQuiz id={quizSelection} user={loggedIn}></MyQuiz>
+                <>
+              {!loggedIn ? (
+                    <Redirect to="/login" />
+                  ) : (
+                <MyQuiz user={loggedIn}></MyQuiz>
+                  )}
+                  </>
               </Route>
               <Route path="/">
                 {!loggedIn ? (
                   <QuizSelector
-                    setQuiz={setQuizSelection}
                   ></QuizSelector>
                 ) : (
                   <QuizViewer
-                    setQuiz={setQuizSelection}
                   ></QuizViewer>
                 )}
               </Route>
