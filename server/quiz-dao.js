@@ -38,7 +38,7 @@ exports.getQuizQuestions = (id) => {
             if(err)
                 reject(err)
             else{
-                const questions = rows.map((q)=>({id:q.ID,testo: q.Testo, min: q.Min, max: q.Max, tipo:q.Tipo}));
+                const questions = rows.map((q)=>({id:q.ID,testo: q.Testo, min: q.Min, max: q.Max, tipo:q.Tipo, posizione: q.Posizione}));
                 resolve(questions)
             }
         })
@@ -94,8 +94,59 @@ exports.pubblicaQuiz = (title,user) => {
             if(err)
                 reject(err)
             else{
-                resolve(exports.getIDQuiz())
+                resolve(true)
             }
         })
     })
+}
+
+exports.getIDDomanda = () => {
+    return new Promise((resolve, reject)=> {
+        const sql = "SELECT max(ID) FROM domanda"
+        db.get(sql, (err, row) => {
+            if(err)
+                reject(err)
+            else{
+                resolve(row["max(ID)"])
+            }
+        })
+    })
+}
+
+
+exports.pubblicaDomanda = (id,testo,min,max,tipo,pos,risposte) => {
+    let statement = "INSERT INTO domanda (Testo,Min,Max,Tipo,IDQuestionario,Posizione) VALUES (?,?,?,?,?,?)"
+    let params = [testo,min,max,tipo,id,pos]
+    return new Promise((resolve, reject)=> {
+        db.run(statement, params, (err, result) => {
+            if(err)
+                reject(err)
+            else{
+                if (tipo == "chiusa")
+                {
+                    exports.getIDDomanda().then(idR=>{
+                        for (let i=0;i<risposte.length;i++)
+                            exports.pubblicaRisposta(risposte[i].testo,idR).catch((err)=>reject(err))
+                    })
+                    resolve(true)
+                }
+                else
+                    resolve (true)
+            }
+        })
+    })
+}
+
+exports.pubblicaRisposta = (testo,id) => {
+    let statement = "INSERT INTO risposte_chiuse (Testo,IDDomanda) VALUES (?,?)"
+        let params = [testo,id]
+        return new Promise((resolve, reject)=> {
+            db.run(statement, params, (err, result) => {
+                if(err)
+                    reject(err)
+                else{
+                    resolve(true)
+                }
+            })
+        })
 }

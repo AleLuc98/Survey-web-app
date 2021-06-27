@@ -103,3 +103,17 @@
     position: inherit;
     margin-right: 5px;
 }
+
+.arrows{
+    float:left;
+}
+
+.delete-btn{
+    float:right;
+}
+
+.question-header{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}

@@ -99,7 +99,19 @@ app.get('/api/getIDQuiz', (req,res) => {
 )
 
 app.post('/api/pubblicaQuiz', (req,res) => {
-  quizDao.pubblicaQuiz(req.body.title,req.user).then(response => console.log(response)).catch(() => res.status(500).end());
+  quizDao.pubblicaQuiz(req.body.title,req.user).then(response => res.send(response)).catch(() => res.status(500).end());
+}
+)
+
+app.post('/api/pubblicaDomande', async (req,res) => {
+  let id = await quizDao.getIDQuiz()
+  await quizDao.pubblicaDomanda(id,"Nome:",1,1,"aperta",1,[])
+  const quiz = req.body;
+  for (let i=0;i<quiz.length;i++){
+    await quizDao.pubblicaDomanda(id,quiz[i].testo,quiz[i].min,quiz[i].max,quiz[i].tipo,quiz[i].posizione,quiz[i].risposte)
+      .catch(() => res.status(500).end());
+}
+res.send(true)
 }
 )
 

@@ -24,10 +24,13 @@ function QuizViewer(props) {
   const history = useHistory();
   const [quiz, setQuiz] = useState();
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('') ;
+
 
   useEffect(() => {
     const inizializeQuiz = async () => {
-      const response = await API.getMyQuiz();
+      const response = await API.getMyQuiz().catch(() => {
+        setErrorMessage("Impossibile visionare i quiz per problemi al server. La preghiamo di riprovare più tardi")})
       setQuiz(response);
       setLoading(false);
     };
@@ -36,6 +39,7 @@ function QuizViewer(props) {
 
   return (
     <>
+      {errorMessage.length > 0 ? <Alert variant='danger'>{errorMessage}</Alert> : ''}
       <h5>I miei questionari </h5>
       <br></br>
       <br></br>

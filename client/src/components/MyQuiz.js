@@ -42,10 +42,12 @@ function MyQuiz(props) {
      }
     if(id!=="quiz"&&id!=="question")
       inizializeQuiz()
-    setLoading(false)   
+    else{
+      setLoading(false)   
+    }
  },[id])
 
- function saveHandler(id_q, testo, min ,max, tipo,risposte) {
+ function saveHandler(id_q, testo, min ,max, tipo, risposte) {
   let domanda = {
     //Id used to link answers to the question locally
     id: quiz.length+1,
@@ -54,11 +56,37 @@ function MyQuiz(props) {
     min:min,
     max:max,
     tipo:tipo,
-    position: quiz.length+1,
+    posizione: quiz.length+1,
     risposte: risposte
   }
   setQuiz(oldQuiz=>[...oldQuiz,domanda])
 }
+
+const rollUp = (e) => {
+  if (e.posizione>1){
+    let prec = quiz.filter((d) => d.posizione === (e.posizione - 1));
+    e.posizione--
+    prec[0].posizione++;
+    let tmp = quiz.map((e)=>e)
+    setQuiz(tmp)
+  }
+}
+
+const rollDown = (e) => {
+  if (e.posizione < quiz.length) {
+    let succ = quiz.filter((d) => d.posizione === (e.posizione + 1));
+    e.posizione++;
+    succ[0].posizione--;
+    let tmp = quiz.map((e)=>e)
+    setQuiz(tmp)
+  }
+};
+
+const deleteQuestion = (e) => {
+    let tmp = quiz.filter((d)=>d.id!==e.id)
+    setQuiz(tmp)
+}
+
 
 const handleSubmit = (event) => {
   event.preventDefault();
@@ -78,9 +106,9 @@ const handleSubmit = (event) => {
   }
 
   if (valid) {
-    API.pubblicaQuiz(title,quiz).catch((err) => {
-    setErrorMessage(err);
-    }).then(location.pathname.push("/"));
+    API.pubblicaQuiz(title,quiz).catch(() => {
+    setErrorMessage("Impossibile pubblicare il quiz per problemi al server. La preghiamo di riprovare più tardi")
+    }).then(()=>{if(errorMessage.length === 0) history.push("/")})
   }
 };
 
@@ -117,8 +145,8 @@ const handleSubmit = (event) => {
       <Spinner animation="border" role="status">
                   <span className="sr-only">Loading...</span>
                 </Spinner>) :(
-        quiz.map((d) => (
-          <Myquestion domanda={d} key={d.id}></Myquestion>
+        quiz.sort((a,b)=>a.posizione-b.posizione).map((d) => (
+          <Myquestion domanda={d} key={d.id} user={props.user} up={()=>rollUp(d)} down={()=>rollDown(d)} delete ={()=>deleteQuestion(d)}></Myquestion>
         )))}
         <Card.Footer>* indica la domanda obbligatoria</Card.Footer>
       </Container>
@@ -175,7 +203,7 @@ function QuestionForm(props) {
       setErrorMsg("Inserire il testo della domanda");
     }
     if (numeroRisposte>0){
-      if ((risposte.length!=numeroRisposte)||(Array.from(risposte).some((el)=>el[1]==="")))
+      if ((risposte.size!=numeroRisposte)||(Array.from(risposte).some((el)=>el[1]==="")))
       {
         valid=false
         setErrorMsg("Completare tutte le opzioni della risposte chiuse");
@@ -183,7 +211,7 @@ function QuestionForm(props) {
     }
     if (valid)
     {
-      onSave(props.id_quiz,testo, min, max, tipo,Array.from(risposte).map((r)=>{let risposta = {id:r[0],testo:r[1]};return risposta}));
+      onSave(props.id_quiz,testo, min, max, tipo, Array.from(risposte).map((r)=>{let risposta = {id:r[0],testo:r[1]};return risposta}));
       setSubmitted(true);
     }
   };

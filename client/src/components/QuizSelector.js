@@ -7,11 +7,13 @@ import API from '../API';
 function QuizSelector() {
     const [quiz,setQuiz] = useState();
     const [loading, setLoading ] = useState(true)
+    const [errorMessage, setErrorMessage] = useState('') ;
 
 
     useEffect(() => {
        const inizializeQuiz = async () => {
-            const response = await API.getQuiz();
+            const response = await API.getQuiz().catch(() => {
+                setErrorMessage("Impossibile selezionare un quiz per problemi al server. La preghiamo di riprovare più tardi")})
             setQuiz(response)
             setLoading(false)   
         }
@@ -20,6 +22,7 @@ function QuizSelector() {
 
     return (
         <>
+              {errorMessage.length > 0 ? <Alert variant='danger'>{errorMessage}</Alert> : ''}
                 <h5>Selezionare il questionario a cui si vuole rispondere</h5>
                 <br></br><br></br>
                 <Table striped bordered hover>

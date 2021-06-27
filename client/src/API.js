@@ -144,27 +144,26 @@ const pubblicaQuiz = async (title, quiz) => {
     body: JSON.stringify({title: title}),
   });
   if (response.ok) {
-    /*response = await fetch(BASEURL + "/pubblicaDomande", {
-      method: "POST",
+    let response2 = await fetch(BASEURL + '/pubblicaDomande', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(quiz),
     });
-    if (response.ok) {
+    if (response2.ok) {
       return true;
     } else {
       try {
-        const errDetail = await response.json();
+        const errDetail = await response2.json();
         throw errDetail.message;
       } catch (err) {
         throw err;
       }
-    }*/
-    return true
+    }
   } else {
     try {
-      const errDetail = await response.json();
+      const errDetail = await response.json();     
       throw errDetail.message;
     } catch (err) {
       throw err;
