@@ -3,8 +3,7 @@
 const express = require("express");
 const {
   check,
-  validationResult,
-  expressValidator,
+  validationResult
 } = require("express-validator"); 
 const cors = require("cors");
 const passport = require("passport");
@@ -71,6 +70,13 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+//Controlla se le risposte ad una determianta domanda si trovano nelle possibili opzioni della domanda
+async function checkInRange (id,ans) {
+  if (ans===null)
+    return true
+  return quizDao.getAnswers(id).then((res)=>res.map(e=>e.id).some(e=> ans.indexOf(e) >=0))
+}
+
 /*** APIs ***/
 
 //GET /api/quiz - ritorna tutti i quzi del sistema
@@ -89,19 +95,25 @@ app.get("/api/myquiz", isLoggedIn, (req, res) => {
     .catch(() => res.status(500).end());
 });
 
-//GET /api/myquiz - ritorna le domande del quiz
+//GET /api/quiz_:id - ritorna le domande del quiz
 app.get("/api/quiz_:id", [check("id").isInt()], (req, res) => {
+  const errors = validationResult(req);
+    if (!errors.isEmpty()) 
+        return res.status(400).json({message: errors.array()});
   quizDao
     .getQuizQuestions(req.params.id)
     .then((response) => res.send(response))
     .catch(() => res.status(500).end());
 });
 
-//GET /api/myquiz - ritorna tutti le risposte al quiz date dall'utilizzatore
+//GET /api/quizAnswers_:id/:utilizzatore - ritorna tutte le risposte al quiz date dall'utilizzatore
 app.get(
   "/api/quizAnswers_:id/:utilizzatore",
   [check("id").isInt(), check("utilizzatore").isInt()],
   (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) 
+        return res.status(400).json({message: errors.array()});
     quizDao
       .getQuizAnswers(req.params.id, req.params.utilizzatore)
       .then((response) => res.send(response))
@@ -109,36 +121,37 @@ app.get(
   }
 );
 
-//GET /api/myquiz - ritorna il titolo e il numero di compilazioni del quiz
+//GET /api/quizTitle_:id - ritorna il titolo e il numero di compilazioni del quiz
 app.get("/api/quizTitle_:id", [check("id").isInt()], (req, res) => {
+  const errors = validationResult(req);
+    if (!errors.isEmpty()) 
+        return res.status(400).json({message: errors.array()});
   quizDao
     .getQuizTitle(req.params.id)
     .then((response) => res.send(response))
     .catch(() => res.status(500).end());
 });
 
-//GET /api/myquiz - ritorna le opzioni a risposta chiusa per una domanda
+//GET /api/answers_:id - ritorna le opzioni a risposta chiusa per una domanda
 app.get("/api/answers_:id", [check("id").isInt()], (req, res) => {
+  const errors = validationResult(req);
+    if (!errors.isEmpty()) 
+        return res.status(400).json({message: errors.array()});
   quizDao
     .getAnswers(req.params.id)
     .then((response) => res.send(response))
     .catch(() => res.status(500).end());
 });
 
-//GET /api/myquiz - ritorna l'ID più alto nella tabella dei quiz
-app.get("/api/getIDQuiz", (req, res) => {
-  quizDao
-    .getIDQuiz()
-    .then((response) => res.send(response))
-    .catch(() => res.status(500).end());
-});
-
-//POST /api/myquiz - aggiunge un quiz
+//POST /api/pubblicaQuiz - aggiunge un quiz
 app.post(
   "/api/pubblicaQuiz",
   isLoggedIn,
   [check("title").not().isEmpty()],
   (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) 
+        return res.status(400).json({message: errors.array()});
     quizDao
       .pubblicaQuiz(req.body.title, req.user)
       .then((response) => res.send(response))
@@ -146,16 +159,29 @@ app.post(
   }
 );
 
-//GET /api/myquiz - aggiunge tutte le domande del quiz pubblicato
+//GET /api/pubblicaDomande - aggiunge tutte le domande del quiz pubblicato
 app.post(
   "/api/pubblicaDomande",
   isLoggedIn,
   [check("quiz").not().isEmpty()],
   async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) 
+        return res.status(400).json({message: errors.array()});
     let id = await quizDao.getIDQuiz();
     await quizDao.pubblicaDomanda(id, "Nome:", 1, 1, "aperta", 1, []);
     const quiz = req.body.quiz;
     for (let i = 0; i < quiz.length; i++) {
+      if (
+        quiz[i].testo === "" ||
+        quiz[i].max < quiz[i].min ||
+        quiz[i].min < 0 ||
+        quiz[i].max < 0 ||
+        quiz[i].tipo === "" ||
+        quiz[i].posizione < 0
+      ) {
+        return res.status(400).json({ message: "Parametri errati" });
+      }
       await quizDao
         .pubblicaDomanda(
           id,
@@ -172,16 +198,28 @@ app.post(
   }
 );
 
-//POST /api/myquiz - salva le risposte date da un utilizzatore
+//POST /api/pubblicaRisposte - salva le risposte date da un utilizzatore
 app.post(
   "/api/pubblicaRisposte",
   [check("quiz").not().isEmpty(), check("risposte").not().isEmpty()],
   async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) 
+        return res.status(400).json({message: errors.array()});
     const quiz = req.body.quiz;
     const risposte = req.body.risposte;
     let utilizzatore = await quizDao.getUtilizzatore();
     if (utilizzatore === null) utilizzatore = 0;
     for (let i = 0; i < quiz.length; i++) {
+      const check = await checkInRange(quiz[i].id,risposte[i][1])
+      if (
+        quiz[i].id === "" ||
+        (quiz[i].tipo === "chiusa" && !check)
+      ) {
+        return res.status(400).json({ message: "Parametri errati" });
+      }
+      if (risposte[i][1]===null)
+            risposte[i][1]=""
       await quizDao
         .pubblicaRisposta(
           risposte[i][1],

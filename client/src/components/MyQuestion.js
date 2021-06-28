@@ -12,22 +12,20 @@ function Myquestion(props) {
   
     useEffect(() => {
       const inizializeQuestion = async () => {
-        const response = await API.getAnswers(props.domanda.id);
-        setRisposte(response);
-        setLoading(false);
-        if (props.domanda.tipo === "chiusa"){
-          if (props.answer.length===0)
-            setAnswer([])
+        if (props.domanda.tipo === "chiusa" && risposte === undefined){
+          const response = await API.getAnswers(props.domanda.id);
+          setRisposte(response);
         }
-        setAnswer(props.answer)
+        setLoading(false);
       };
-
-      if (!props.domanda.risposte) inizializeQuestion()
+      if (!props.domanda.risposte) 
+        inizializeQuestion()
       else {
         setRisposte(props.domanda.risposte);
         setLoading(false);
       }
-    }, [props.domanda.id, props.domanda.risposte, props.domanda.tipo,props.answer]);
+      setAnswer(props.answer)
+    }, [props.domanda.id, props.domanda.risposte, props.domanda.tipo, props.answer, risposte]);
 
  function modifyAnswer (id) {
    if (answer.includes(id)){
@@ -65,7 +63,7 @@ function Myquestion(props) {
               {ArrowDownIcon}
             </Button>
             </Card> : null}
-        Domanda {props.domanda.min>0 ? "*" : ""} {props.domanda.tipo === "chiusa" ? "[min: "+props.domanda.min+", max: "+props.domanda.max+"]" : ""}
+        Domanda {props.domanda.min>0 ? "*" : ""} <br></br> {props.domanda.tipo === "chiusa" ? "[min: "+props.domanda.min+", max: "+props.domanda.max+"]" : ""}
         {props.user && !props.location.includes("compilazioni") ? <Button variant="danger" className="delete-btn" onClick={props.delete}>
           {deleteIcon}
         </Button> : null}
@@ -78,6 +76,7 @@ function Myquestion(props) {
             <Form.Group className="centered-checkbox">
               {risposte.map((r)=>
               <Form.Check
+                className="answer"
                 disabled={props.location.includes("compilazioni") ? true:false}
                 checked={answer.includes(r.id) ? true : false}
                 onChange={(e) =>

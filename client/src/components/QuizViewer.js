@@ -12,7 +12,7 @@ import {
 import API from "../API";
 
 function QuizViewer(props) {
-  const [quiz, setQuiz] = useState();
+  const [quiz, setQuiz] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('') ;
 
@@ -29,11 +29,12 @@ function QuizViewer(props) {
         response = await API.getQuiz().catch(() => {
           setErrorMessage(
             "Impossibile visionare i quiz per problemi al server. La preghiamo di riprovare più tardi"
-          );
+          )
         });
-
-      setQuiz(response);
-      setLoading(false);
+      if (response!==undefined){
+        setQuiz(response)
+        setLoading(false);
+      }
     };
     inizializeQuiz();
   }, [props.user]);

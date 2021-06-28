@@ -17,7 +17,6 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(()=> {
-    setLoading(true);
     const checkAuth = async () => {
       try {
         const user = await API.getUserInfo();
@@ -44,8 +43,10 @@ function App() {
   }
 
   const logoutHandler = async () => {
+    setLoading(true)
     await API.logOut()
-    setLoggedIn(false)    
+    setLoggedIn(false)   
+    setLoading(false)
   }
     return (
       <Router>
@@ -60,7 +61,7 @@ function App() {
             <MyNavbar
                 title="Questionario"
                 user={loggedIn}
-                logout={()=> {logoutHandler(); <Redirect to="/" />}}
+                logout={()=> logoutHandler()}
                 login={() => <Redirect to="/login" />}
               ></MyNavbar>
             <Switch>

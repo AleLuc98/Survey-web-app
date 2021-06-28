@@ -81,7 +81,7 @@
     background-color: transparent;
 }
 
-.answers{
+.answer{
     display: flex;
     align-items: center;
 }
@@ -128,11 +128,15 @@
 }
 
 .question{
-    width: 18rem;
+    width: 25rem;
     border: 1px solid !important;
     border-color: #dc3545!important;
 }
 
+.answers{
+    display: flex;
+    align-items: center;
+}
 /*========Login Style Sheet ==========*/
 
 .login{

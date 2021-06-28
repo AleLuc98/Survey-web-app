@@ -23,7 +23,7 @@ function MyQuiz(props) {
   const location = useLocation();
   const [quiz, setQuiz] = useState([]);
   const [loading, setLoading] = useState(true)
-  const [title, setTitle] = useState();
+  const [title, setTitle] = useState("");
   const [errorMessage, setErrorMessage] = useState('') ;
   const [answer,setAnswer] = useState(new Map())
   const [utilizzatore, setUtilizzatore] = useState(1)
@@ -32,7 +32,7 @@ function MyQuiz(props) {
 
   useEffect(() => {
     const inizializeQuiz = async () => {
-      const res = await API.getQuizTitle(id);
+      const res = await API.getQuizTitle(id)
       setTitle(res.titolo);
       setNumeroCompilazioni(res.n);
       const response = await API.getQuizQuestions(id);
@@ -69,11 +69,10 @@ function MyQuiz(props) {
 
   
 
- function saveHandler(id_q, testo, min ,max, tipo, risposte) {
+ function saveHandler(testo, min ,max, tipo, risposte) {
   let domanda = {
     //Id used to link answers to the question locally
     id: quiz.length+1,
-    id_quiz:id_q,
     testo:testo,
     min:min,
     max:max,
@@ -137,9 +136,13 @@ const handlePubblica = (event) => {
   }
 
   if (valid) {
-    API.pubblicaQuiz(title,quiz).catch(() => {
-    setErrorMessage("Impossibile pubblicare il quiz per problemi al server. La preghiamo di riprovare più tardi")
-    }).then(()=>{if(errorMessage.length === 0) history.push("/")})
+    setErrorMessage("")
+    API.pubblicaQuiz(title,quiz).then((res)=>{if(res) history.push("/")}).catch((res) => {
+      if(res==="Parametri errati")
+      setErrorMessage(res)
+      else
+      setErrorMessage("Impossibile pubblicare le risposte del quiz per problemi al server. La preghiamo di riprovare più tardi")
+    })
   }
 };
 
@@ -162,9 +165,12 @@ const handleSubmit = (event) => {
     }
   }
   if (valid) {
-    API.pubblicaRisposte(quiz,answer,id).catch(() => {
-    setErrorMessage("Impossibile pubblicare le risposte del quiz per problemi al server. La preghiamo di riprovare più tardi")
-    }).then(()=>{if(errorMessage.length === 0) history.push("/")})
+    API.pubblicaRisposte(quiz,answer,id).then((res)=>{if(res) history.push("/")}).catch((res) => {
+      if(res==="Parametri errati")
+      setErrorMessage(res)
+      else
+      setErrorMessage("Impossibile pubblicare le risposte del quiz per problemi al server. La preghiamo di riprovare più tardi")
+    })
   }
 }
 
@@ -240,6 +246,10 @@ const handleSubmit = (event) => {
               ></Myquestion>
             ))
         )}
+         {props.user && !location.pathname.includes("compilazioni") ? (
+        <Link to="/add_question">
+            <Button className="btn-danger circle">Aggiungi domanda</Button>
+          </Link>) : null}
         <Card.Footer>* indica la domanda obbligatoria</Card.Footer>
       </Container>
       <Link to="/">
@@ -250,22 +260,15 @@ const handleSubmit = (event) => {
 
       {props.user && !location.pathname.includes("compilazioni") ? (
         <>
-          <Link to="/add_question">
-            <Button className="add-quiz-btn btn-danger circle">+</Button>
-          </Link>
-          <Link to="/">
             <Button variant="outline-danger" onClick={handlePubblica}>
               Pubblica
             </Button>{" "}
-          </Link>
         </>
       ) : null}
       {!location.pathname.includes("compilazioni") && !props.user ? 
-      <Link to="/">
         <Button variant="outline-danger" onClick={handleSubmit}>
           Invia risposte
-        </Button>{" "}
-      </Link> : null}
+        </Button> : null}
     </>
   );
 }

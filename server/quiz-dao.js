@@ -45,14 +45,29 @@ exports.getQuizQuestions = (id) => {
     })
 }
 
-exports.getQuizAnswers = (id_quiz,id_utilizzatore) => {
+exports.getIDUtilizzatore = (id_quiz) =>{
     return new Promise((resolve, reject)=> {
-        const sql = "SELECT * FROM risposte WHERE IDQuestionario=? AND IDUtilizzatore=?"
-        db.all(sql, [id_quiz,id_utilizzatore], (err, rows) => {
+        const sql = "SELECT min(IDUtilizzatore) FROM risposte WHERE IDQuestionario=? "
+        db.all(sql, id_quiz, (err, row) => {
             if(err)
                 reject(err)
             else{
-                const answers = rows.map((a)=>({id:a.ID,testo: a.Testo, id_doamnda: a.IDDOmanda}));
+                resolve(row[0]["min(IDUtilizzatore)"])
+            }
+        })
+    })
+}
+
+exports.getQuizAnswers = async (id_quiz,id_utilizzatore) => {
+    const min_utilizzatore = await exports.getIDUtilizzatore(id_quiz)
+    if(min_utilizzatore===undefined) min_utilizzatore=1
+    return new Promise((resolve, reject)=> {
+        const sql = "SELECT * FROM risposte WHERE IDQuestionario=? AND IDUtilizzatore=?"
+        db.all(sql, [id_quiz,(min_utilizzatore-1+parseInt(id_utilizzatore))], (err, rows) => {
+            if(err)
+                reject(err)
+            else{
+                const answers = rows.map((a)=>({id:a.ID,testo: a.Testo}));
                 resolve(answers)
             }
         })

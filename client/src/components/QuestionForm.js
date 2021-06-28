@@ -21,7 +21,7 @@ function QuestionForm(props) {
     const [numeroRisposte, setNumeroRisposte] = useState(0);
     const [min, setMin] = useState(0);
     const [max, setMax] = useState(1);
-    const [errorMsg, setErrorMsg] = useState();
+    const [errorMsg, setErrorMsg] = useState("");
     const [submitted, setSubmitted] = useState();
   
     const aggiungiRisposta = (k, value) => {
@@ -46,6 +46,26 @@ function QuestionForm(props) {
         valid= false
         setErrorMsg("Inserire il testo della domanda");
       }
+      if(min===""||max===""){
+        valid= false
+        setErrorMsg("Minimo e massimo non possono essere vuoti");
+      }
+
+      if(max<min){
+        valid= false
+        setErrorMsg("Il massimo non può essere minore del minimo");
+      }
+
+      if(min<0){
+        valid= false
+        setErrorMsg("Il minimo deve essere non negativo");
+      }
+
+      if(max<=0){
+        valid= false
+        setErrorMsg("Il massimo deve essere positivo");
+      }
+
       if (numeroRisposte>0){
         // eslint-disable-next-line eqeqeq
         if ((risposte.size!=numeroRisposte)||(Array.from(risposte).some((el)=>el[1]==="")))
@@ -56,7 +76,7 @@ function QuestionForm(props) {
       }
       if (valid)
       {
-        onSave(props.id_quiz,testo, min, max, tipo, Array.from(risposte).map((r)=>{let risposta = {id:r[0],testo:r[1]};return risposta}));
+        onSave(testo, min, max, tipo, Array.from(risposte).map((r)=>{let risposta = {id:r[0],testo:r[1]};return risposta}));
         setSubmitted(true);
       }
     };
@@ -173,7 +193,7 @@ function QuestionForm(props) {
           </Modal.Body>
           <Modal.Footer>
             <Link to="/new_quiz">
-              <Button variant="outline-grey">Close</Button>
+              <Button variant="outline-grey">Annulla</Button>
             </Link>
             <Button variant="outline-danger" onClick={(e) => handleSubmit(e)}>
               Aggiungi domanda

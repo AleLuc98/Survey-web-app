@@ -1,5 +1,10 @@
 import { Form, Button, Alert,Container } from 'react-bootstrap';
 import { useState } from 'react';
+import {
+  Link,
+} from "react-router-dom";
+import { homeIcon } from "../icons";
+
 
 function LoginForm(props) {
   const [username, setUsername] = useState("s281755@polito.it");
@@ -54,6 +59,11 @@ function LoginForm(props) {
           </Form.Group>
           <Button variant="outline-danger" onClick={handleSubmit}>Login</Button>
         </Form>
+        <Link to="/">
+        <Button className="home-btn" variant="outline-danger">
+          {homeIcon}
+        </Button>{" "}
+      </Link>
         </Container>
   );
 }
