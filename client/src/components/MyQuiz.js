@@ -26,46 +26,48 @@ function MyQuiz(props) {
   const [title, setTitle] = useState();
   const [errorMessage, setErrorMessage] = useState('') ;
   const [answer,setAnswer] = useState(new Map())
-  const [utilizzatore, setUtilizzatore] = useState(0)
+  const [utilizzatore, setUtilizzatore] = useState(1)
   const [numeroCompilazioni, setNumeroCompilazioni] = useState(0)
   const id = location.pathname.split("_")[1].split("/")[0]  
 
   useEffect(() => {
     const inizializeQuiz = async () => {
-        const res = await API.getQuizTitle(id);
-        setTitle(res.titolo);
-        const response = await API.getQuizQuestions(id);
-        setQuiz(response)
-        setLoading(false)   
-     }
-     const inizializeAnswers = async () => {
       const res = await API.getQuizTitle(id);
       setTitle(res.titolo);
-      setNumeroCompilazioni(res.n)
+      setNumeroCompilazioni(res.n);
+      const response = await API.getQuizQuestions(id);
+      setQuiz(response)
+      setLoading(false);
+    };
+    const inizializeAnswers = async () => {
       const ans = await API.getQuizAnswers(id, utilizzatore);
       let tmp = new Map();
       for (let i = 0; i < ans.length; i++) {
         tmp.set(i, ans[i].testo);
       }
       setAnswer(tmp);
-      const response = await API.getQuizQuestions(id);
-      setQuiz(response);
-      setLoading(false);   
-   }
-   if (location.pathname.includes("compilazioni")){
-    inizializeAnswers()  
-    setUtilizzatore(location.pathname.split("_")[2])
-  }
-  else{
-    setLoading(false)   
-  }
-    if(!location.pathname.includes("new_quiz")&&!location.pathname.includes("add_question")){
-      inizializeQuiz()
+      setLoading(false);
+    };
+    if (
+      !location.pathname.includes("new_quiz") &&
+      !location.pathname.includes("add_question") &&
+      !location.pathname.includes("compilazioni")
+    ) {
+      inizializeQuiz();
+    } else {
+      setLoading(false);
     }
-    else{
-      setLoading(false)   
+    if (location.pathname.includes("compilazioni")) {
+      setUtilizzatore(location.pathname.split("_")[2])
+        if (utilizzatore === location.pathname.split("_")[2]) {
+          inizializeQuiz().then(inizializeAnswers());
+        }
+    } else {
+      setLoading(false);
     }
- },[location.pathname,id,utilizzatore])
+  }, [location.pathname, id, utilizzatore]);
+
+  
 
  function saveHandler(id_q, testo, min ,max, tipo, risposte) {
   let domanda = {
@@ -241,7 +243,7 @@ const handleSubmit = (event) => {
         <Card.Footer>* indica la domanda obbligatoria</Card.Footer>
       </Container>
       <Link to="/">
-        <Button className="home-btn" variant="outline-light">
+        <Button className="home-btn" variant="outline-danger">
           {homeIcon}
         </Button>{" "}
       </Link>
@@ -249,7 +251,7 @@ const handleSubmit = (event) => {
       {props.user && !location.pathname.includes("compilazioni") ? (
         <>
           <Link to="/add_question">
-            <Button className="add-task-btn btn-danger circle">+</Button>
+            <Button className="add-quiz-btn btn-danger circle">+</Button>
           </Link>
           <Link to="/">
             <Button variant="outline-danger" onClick={handlePubblica}>
@@ -258,7 +260,7 @@ const handleSubmit = (event) => {
           </Link>
         </>
       ) : null}
-      {!location.pathname.includes("compilazioni") ? 
+      {!location.pathname.includes("compilazioni") && !props.user ? 
       <Link to="/">
         <Button variant="outline-danger" onClick={handleSubmit}>
           Invia risposte

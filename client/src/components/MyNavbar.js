@@ -18,7 +18,7 @@ function MyNavbar(props){
                         </Dropdown.Toggle>
                          <Dropdown.Menu style={{left:"-100px", fontSize:"14px"}}>
                          {props.user ? 
-                            <Dropdown.Item style={{color: "black"}} onClick = {()=>props.logout()}>
+                            <Dropdown.Item as={Link} style={{color: "black"}} to="/" onClick = {()=>props.logout()}>
                                     Logout
                             </Dropdown.Item>  : 
                         <Dropdown.Item as={Link} style={{color: "black"}} to="/login" onClick={()=>props.login()}>

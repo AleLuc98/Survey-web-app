@@ -2,11 +2,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import MyNavbar from './components/MyNavbar'
 import QuizViewer from './components/QuizViewer'
-import QuizSelector from './components/QuizSelector'
 import MyQuiz from './components/MyQuiz'
 import './components/components.css'
-import {Container, Row} from 'react-bootstrap'
-import React, { useState } from 'react'
+import {Container, Row, Spinner} from 'react-bootstrap'
+import React, { useState,useEffect } from 'react'
 import {BrowserRouter as Router, Switch, Redirect, Route } from 'react-router-dom';
 import API from './API';
 import { LoginForm } from './components/LoginComponent';
@@ -15,6 +14,23 @@ import { LoginForm } from './components/LoginComponent';
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [errors, setErrors] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(()=> {
+    setLoading(true);
+    const checkAuth = async () => {
+      try {
+        const user = await API.getUserInfo();
+        setLoggedIn(user);
+        setLoading(false)
+      }
+      catch(err){
+        setLoggedIn(false)
+        setLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   const loginHandler = async (credentials) => {
     try{
@@ -28,14 +44,18 @@ function App() {
   }
 
   const logoutHandler = async () => {
-    await fetch('/api/sessions/current', { method: 'DELETE' });
-    setLoggedIn(false)
+    await API.logOut()
+    setLoggedIn(false)    
   }
     return (
       <Router>
       
         <div className="App">
           <Container fluid>
+          {loading ? 
+                        <Spinner animation="border" role="status">
+                         <span className="sr-only">Loading...</span>
+                        </Spinner> :
             <Row className="app-body">
             <MyNavbar
                 title="Questionario"
@@ -66,16 +86,11 @@ function App() {
                   </>
               </Route>
               <Route path="/">
-                {!loggedIn ? (
-                  <QuizSelector
-                  ></QuizSelector>
-                ) : (
-                  <QuizViewer
+                  <QuizViewer user={loggedIn}
                   ></QuizViewer>
-                )}
               </Route>
               </Switch>
-            </Row>
+            </Row>}
           </Container>
         </div>
  

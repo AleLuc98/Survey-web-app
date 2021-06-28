@@ -23,6 +23,21 @@ async function logIn(credentials) {
     }
 }
 
+async function logOut() {
+  await fetch('/api/sessions/current', { method: 'DELETE' });
+}
+
+
+async function getUserInfo() {
+  const response = await fetch('/api/sessions/current');
+  const userInfo = await response.json();
+  if (response.ok) {
+    return userInfo;
+  } else {     
+    throw userInfo;  
+  }
+}
+
 const getQuiz = async () => {
   let response = await fetch(BASEURL +'/quiz', {
     method: 'GET',
@@ -170,7 +185,7 @@ const pubblicaQuiz = async (title, quiz) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(quiz),
+      body: JSON.stringify({quiz: quiz}),
     });
     if (response2.ok) {
       return true;
@@ -213,5 +228,5 @@ const pubblicaRisposte = async (quiz,risposte,id) => {
 };
   
   
-const API = {logIn, getQuiz, getQuizTitle, getMyQuiz, getQuizQuestions, getQuizAnswers, getAnswers, pubblicaQuiz, pubblicaRisposte};
+const API = {logIn, logOut, getUserInfo, getQuiz, getQuizTitle, getMyQuiz, getQuizQuestions, getQuizAnswers, getAnswers, pubblicaQuiz, pubblicaRisposte};
   export default API;

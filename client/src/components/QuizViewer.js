@@ -16,21 +16,35 @@ function QuizViewer(props) {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('') ;
 
-
   useEffect(() => {
     const inizializeQuiz = async () => {
-      const response = await API.getMyQuiz().catch(() => {
-        setErrorMessage("Impossibile visionare i quiz per problemi al server. La preghiamo di riprovare più tardi")})
+      let response;
+      if (props.user)
+        response = await API.getMyQuiz().catch(() => {
+          setErrorMessage(
+            "Impossibile visionare i quiz per problemi al server. La preghiamo di riprovare più tardi"
+          );
+        });
+      else
+        response = await API.getQuiz().catch(() => {
+          setErrorMessage(
+            "Impossibile visionare i quiz per problemi al server. La preghiamo di riprovare più tardi"
+          );
+        });
+
       setQuiz(response);
       setLoading(false);
     };
     inizializeQuiz();
-  }, []);
+  }, [props.user]);
 
   return (
     <>
       {errorMessage.length > 0 ? <Alert variant='danger'>{errorMessage}</Alert> : ''}
-      <h5>I miei questionari </h5>
+      {props.user ?
+      <h5>I miei questionari </h5> :
+      <h5>Selezionare il questionario a cui si vuole rispondere</h5>
+      }
       <br></br>
       <br></br>
       <Table striped bordered hover>
@@ -38,7 +52,7 @@ function QuizViewer(props) {
           <tr>
             <th>ID</th>
             <th>Titolo del questionario</th>
-            <th>Numero di compilazioni</th>
+            {props.user ?  <th>Numero di compilazioni</th> : null}
           </tr>
         </thead>
         <tbody>
@@ -55,21 +69,27 @@ function QuizViewer(props) {
               <tr key={q.id}>
                 <td>{q.id}</td>
                 <td>{q.titolo}</td>
-                <td>{q.compilazioni}</td>
+                {props.user ?  
+                <td>{q.compilazioni}</td> : null }
                 <td>
-                  {q.compilazioni > 0 ?
+                  {props.user && q.compilazioni> 0 ?
                   <Link to={"/compilazioni_"+q.id+"/utilizzatore_1"}>
                     <Button variant="outline-grey">{arrowIcon}</Button>
                   </Link> : null}
+                  {!props.user ? 
+                  <Link to={"/quiz_"+q.id}><Button variant="outline-grey">
+                  {arrowIcon}</Button></Link>
+                  : null}
                 </td>
               </tr>
             ))
             )}
         </tbody>
       </Table>
+      {props.user ?
       <Link to="/new_quiz">
-        <Button className="add-task-btn btn-danger circle">+</Button>
-      </Link>
+        <Button className="add-quiz-btn btn-danger circle">+</Button>
+      </Link> : null}
     </>
   );
 }

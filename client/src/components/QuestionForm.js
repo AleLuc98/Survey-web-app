@@ -47,7 +47,8 @@ function QuestionForm(props) {
         setErrorMsg("Inserire il testo della domanda");
       }
       if (numeroRisposte>0){
-        if ((risposte.size!==numeroRisposte)||(Array.from(risposte).some((el)=>el[1]==="")))
+        // eslint-disable-next-line eqeqeq
+        if ((risposte.size!=numeroRisposte)||(Array.from(risposte).some((el)=>el[1]==="")))
         {
           valid=false
           setErrorMsg("Completare tutte le opzioni della risposte chiuse");
