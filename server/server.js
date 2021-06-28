@@ -176,7 +176,9 @@ app.post(
         quiz[i].testo === "" ||
         quiz[i].max < quiz[i].min ||
         quiz[i].min < 0 ||
-        quiz[i].max < 0 ||
+        quiz[i].max <= 0 ||
+        quiz[i].min === "" ||
+        quiz[i].max === "" ||
         quiz[i].tipo === "" ||
         quiz[i].posizione < 0
       ) {
