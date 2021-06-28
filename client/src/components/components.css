@@ -90,6 +90,19 @@
     align-items: center;
 }
 
+.left-btn{
+    width: fit-content;
+    position: fixed;
+    left: 2%;
+}
+
+.right-btn{
+    width: fit-content;
+    position: fixed;
+    right: 2%;
+}
+
+
 /*========MyQuestion Style Sheet ==========*/
 
 .centered-checkbox{
@@ -116,4 +129,17 @@
     display: flex;
     justify-content: space-around;
     align-items: center;
+}
+
+.question{
+    width: 18rem;
+    border: 1px solid !important;
+    border-color: #dc3545!important;
+}
+
+/*========Login Style Sheet ==========*/
+
+.login{
+    width: 60%;
+    margin: auto;
 }

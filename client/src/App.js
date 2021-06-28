@@ -6,9 +6,8 @@ import QuizSelector from './components/QuizSelector'
 import MyQuiz from './components/MyQuiz'
 import './components/components.css'
 import {Container, Row} from 'react-bootstrap'
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import {BrowserRouter as Router, Switch, Redirect, Route } from 'react-router-dom';
-import { quiz } from './FakeQuiz';
 import API from './API';
 import { LoginForm } from './components/LoginComponent';
 
@@ -57,7 +56,7 @@ function App() {
               <Route path="/quiz_:id">
                 <MyQuiz user={loggedIn}></MyQuiz>
               </Route>
-              <Route path={["/new_quiz","/add_question"]}>
+              <Route path={["/new_quiz","/add_question","/compilazioni_:id"]}>
                 <>
               {!loggedIn ? (
                     <Redirect to="/login" />

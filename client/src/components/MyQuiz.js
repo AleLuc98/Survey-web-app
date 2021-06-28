@@ -1,25 +1,21 @@
 import {
-  ListGroup,
-  Modal,
   Button,
   Form,
   Alert,
-  Row,
   Container,
   Card,
   Spinner
 } from "react-bootstrap";
 import React, { useState, useEffect } from "react";
-import { confirmIcon, homeIcon, plusIcon } from "../icons";
+import { ArrowLeftIcon, ArrowRightIcon, homeIcon } from "../icons";
 import {
   Link,
   Route,
   useLocation,
-  Redirect,
   useHistory,
 } from "react-router-dom";
-import { domande, risposte } from "../FakeQuiz";
 import Myquestion from "./MyQuestion";
+import QuestionForm from "./QuestionForm";
 import API from '../API';
 
 function MyQuiz(props) {
@@ -29,23 +25,47 @@ function MyQuiz(props) {
   const [loading, setLoading] = useState(true)
   const [title, setTitle] = useState();
   const [errorMessage, setErrorMessage] = useState('') ;
-  const id = location.pathname.split("_")[1]
-  
+  const [answer,setAnswer] = useState(new Map())
+  const [utilizzatore, setUtilizzatore] = useState(0)
+  const [numeroCompilazioni, setNumeroCompilazioni] = useState(0)
+  const id = location.pathname.split("_")[1].split("/")[0]  
 
   useEffect(() => {
     const inizializeQuiz = async () => {
-        const titolo = await API.getQuizTitle(id);
-        setTitle(titolo);
+        const res = await API.getQuizTitle(id);
+        setTitle(res.titolo);
         const response = await API.getQuizQuestions(id);
         setQuiz(response)
         setLoading(false)   
      }
-    if(id!=="quiz"&&id!=="question")
+     const inizializeAnswers = async () => {
+      const res = await API.getQuizTitle(id);
+      setTitle(res.titolo);
+      setNumeroCompilazioni(res.n)
+      const ans = await API.getQuizAnswers(id, utilizzatore);
+      let tmp = new Map();
+      for (let i = 0; i < ans.length; i++) {
+        tmp.set(i, ans[i].testo);
+      }
+      setAnswer(tmp);
+      const response = await API.getQuizQuestions(id);
+      setQuiz(response);
+      setLoading(false);   
+   }
+   if (location.pathname.includes("compilazioni")){
+    inizializeAnswers()  
+    setUtilizzatore(location.pathname.split("_")[2])
+  }
+  else{
+    setLoading(false)   
+  }
+    if(!location.pathname.includes("new_quiz")&&!location.pathname.includes("add_question")){
       inizializeQuiz()
+    }
     else{
       setLoading(false)   
     }
- },[id])
+ },[location.pathname,id,utilizzatore])
 
  function saveHandler(id_q, testo, min ,max, tipo, risposte) {
   let domanda = {
@@ -88,11 +108,20 @@ const deleteQuestion = (e) => {
 }
 
 
-const handleSubmit = (event) => {
+const submitAnswer = (k, value) => {
+  let tmp = new Map();
+  for (let i = 0; i < quiz.length; i++) {
+    if (i === k) tmp.set(i, value);
+    else tmp.set(i, answer.get(i));
+  }
+  setAnswer(tmp);
+};
+
+const handlePubblica = (event) => {
   event.preventDefault();
   setErrorMessage("");
   let valid = true;
-  if (title === "" || title == undefined) {
+  if (title === "" || title === undefined) {
     valid = false;
     setErrorMessage(
       "Il titolo non può essere vuoto"
@@ -112,11 +141,37 @@ const handleSubmit = (event) => {
   }
 };
 
+const handleSubmit = (event) => {
+  event.preventDefault();
+  setErrorMessage("");
+  let valid = true;
+  for (let i=0;i<quiz.length;i++){
+    if (quiz[i].min>0 && (answer.get(i)===undefined || answer.get(i).length===0)) {
+      valid = false;
+      setErrorMessage(
+        "Completare tutte le domande obbligatorie"
+      );
+    }
+      if (quiz[i].min>1 && (answer.get(i)===undefined || answer.get(i).length!==quiz[i].min)) {
+        valid = false;
+        setErrorMessage(
+          "Inserire il numero minimo di risposte dove esplicitamente richiesto"
+        );
+    }
+  }
+  if (valid) {
+    API.pubblicaRisposte(quiz,answer,id).catch(() => {
+    setErrorMessage("Impossibile pubblicare le risposte del quiz per problemi al server. La preghiamo di riprovare più tardi")
+    }).then(()=>{if(errorMessage.length === 0) history.push("/")})
+  }
+}
+
+
   return (
     <>
       <Route path="/add_question">
         <QuestionForm
-        id_quiz={id}
+          id_quiz={id}
           show={true}
           onSave={saveHandler}
           onHide={() => {
@@ -124,30 +179,65 @@ const handleSubmit = (event) => {
           }}
         ></QuestionForm>
       </Route>
-      
-        {id==="quiz"||id==="question" ? <Form.Group>
-              <Form.Label>Titolo</Form.Label>
-              <Form.Control
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                type="text"
-              ></Form.Control>
-            </Form.Group> :
+      {location.pathname.includes("new_quiz") || location.pathname.includes("add_question") ? (
+        <Form.Group>
+          <Form.Label>Titolo</Form.Label>
+          <Form.Control
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            type="text"
+          ></Form.Control>
+        </Form.Group>
+      ) : (
         <h5>
-        Quiz {id}: {title}
+          Quiz {id}: {title}
         </h5>
-        }
+      )}
       <br></br>
       <br></br>
       <Container fluid className="card-group">
-      {errorMessage.length > 0 ? <Alert variant='danger'>{errorMessage}</Alert> : ''}
-      {loading ? (
-      <Spinner animation="border" role="status">
-                  <span className="sr-only">Loading...</span>
-                </Spinner>) :(
-        quiz.sort((a,b)=>a.posizione-b.posizione).map((d) => (
-          <Myquestion domanda={d} key={d.id} user={props.user} up={()=>rollUp(d)} down={()=>rollDown(d)} delete ={()=>deleteQuestion(d)}></Myquestion>
-        )))}
+        
+        <Card >
+        {location.pathname.includes("compilazioni") && utilizzatore>1 ?
+          <Link to={location.pathname.substring(0,location.pathname.lastIndexOf("_")+1)+`${utilizzatore-1}`}>
+        <Button className="left-btn" variant="outline-danger">
+          {ArrowLeftIcon}
+        </Button>
+        </Link>: null}
+        {location.pathname.includes("compilazioni")  && utilizzatore<numeroCompilazioni?
+        <Link to={location.pathname.substring(0,location.pathname.lastIndexOf("_")+1)+`${utilizzatore-(-1)}`}>
+        <Button className="right-btn" variant="outline-danger">
+          {ArrowRightIcon}
+        </Button>
+        </Link>: null}
+
+        </Card> 
+        {errorMessage.length > 0 ? (
+          <Alert variant="danger">{errorMessage}</Alert>
+        ) : (
+          ""
+        )}
+        {loading ? (
+          <Spinner animation="border" role="status">
+            <span className="sr-only">Loading...</span>
+          </Spinner>
+        ) : (
+          quiz
+            .sort((a, b) => a.posizione - b.posizione)
+            .map((d,index) => (
+              <Myquestion
+                domanda={d}
+                key={d.id}
+                user={props.user}
+                up={() => rollUp(d)}
+                down={() => rollDown(d)}
+                delete={() => deleteQuestion(d)}
+                answer={answer.get(index) === undefined ? [] : answer.get(index)}
+                submitAnswer={(a)=>submitAnswer(index,a)}
+                location={location.pathname}
+              ></Myquestion>
+            ))
+        )}
         <Card.Footer>* indica la domanda obbligatoria</Card.Footer>
       </Container>
       <Link to="/">
@@ -156,187 +246,28 @@ const handleSubmit = (event) => {
         </Button>{" "}
       </Link>
 
-      {props.user ? (
-        <Link to="/add_question">
-          <Button className="add-task-btn btn-danger circle">+</Button>
-        </Link>
-      ) : null}
-      <Link to="/">
-        <Button variant="outline-danger" onClick={handleSubmit}>Pubblica</Button>{" "}
-      </Link>
-    </>
-  );
-}
-
-function QuestionForm(props) {
-  const { onSave } = props;
-
-  const [testo, setTesto] = useState("");
-  const [tipo, setTipo] = useState("aperta");
-  const [risposte, setRisposte] = useState(new Map());
-  const [numeroRisposte, setNumeroRisposte] = useState(0);
-  const [min, setMin] = useState(0);
-  const [max, setMax] = useState(1);
-  const [errorMsg, setErrorMsg] = useState();
-  const [submitted, setSubmitted] = useState();
-
-  const aggiungiRisposta = (k, value) => {
-    let tmp = new Map();
-    for (let i = 0; i < numeroRisposte; i++) {
-      if (i === k) tmp.set(i, value);
-      else tmp.set(i, risposte.get(i));
-    }
-    setRisposte(tmp);
-  };
-
-  const selezioneNumeroRisposte = () => {
-    let tmp = new Map();
-    for (let i = 0; i < numeroRisposte; i++) tmp.set(i, "");
-    setRisposte(tmp);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    let valid = true;
-    if (testo === "") {
-      valid= false
-      setErrorMsg("Inserire il testo della domanda");
-    }
-    if (numeroRisposte>0){
-      if ((risposte.size!=numeroRisposte)||(Array.from(risposte).some((el)=>el[1]==="")))
-      {
-        valid=false
-        setErrorMsg("Completare tutte le opzioni della risposte chiuse");
-      }
-    }
-    if (valid)
-    {
-      onSave(props.id_quiz,testo, min, max, tipo, Array.from(risposte).map((r)=>{let risposta = {id:r[0],testo:r[1]};return risposta}));
-      setSubmitted(true);
-    }
-  };
-
-  return (
-    <>
-      {submitted && <Redirect to="/new_quiz"></Redirect>}
-      <Modal
-        onHide={props.onHide}
-        show={props.show}
-        onSubmit={handleSubmit}
-        size="lg"
-        aria-labelledby="contained-modal-title-vcenter"
-        centered
-      >
-        <Modal.Header>
-          <Modal.Title>Crea una nuova domanda</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            {errorMsg ? <Alert variant="danger"> {errorMsg}</Alert> : ""}
-            <Form.Group>
-              <Form.Label>Testo</Form.Label>
-              <Form.Control
-                value={testo}
-                onChange={(e) => setTesto(e.target.value)}
-                type="text"
-              ></Form.Control>
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Tipo &nbsp;&nbsp;</Form.Label>
-
-              <Form.Check
-                checked={tipo == "chiusa" ? true : false}
-                onChange={(e) =>
-                  e.target.value === "on" ? setTipo("chiusa") : null
-                }
-                inline
-                type="radio"
-                label="chiusa"
-              ></Form.Check>
-              <Form.Check
-                onChange={(e) =>
-                  e.target.value === "on" ? setTipo("aperta") : null
-                }
-                checked={tipo == "aperta" ? true : false}
-                inline
-                type="radio"
-                label="aperta"
-              ></Form.Check>
-            </Form.Group>
-            {tipo === "chiusa" ? (
-              <>
-              <Form.Group>
-                <Form.Label>Numero minimo di riposte &nbsp;&nbsp;</Form.Label>
-                <Form.Control
-                value={min}
-                onChange={(e) => setMin(e.target.value)}
-                type="number"
-              ></Form.Control>
-              <Form.Label>Numero massimo di riposte &nbsp;&nbsp;</Form.Label>
-                <Form.Control
-                value={max}
-                onChange={(e) => setMax(e.target.value)}
-                type="number"
-              ></Form.Control>
-              </Form.Group>
-                <Form.Group className="answers">
-                  <Form.Label>Numero di opzioni (massimo 10) &nbsp;&nbsp;</Form.Label>
-                  <Form.Control 
-                    value={numeroRisposte}
-                    onChange={(e) => setNumeroRisposte(e.target.value)}
-                    onBlur={(e) => {
-                      if (numeroRisposte > 10) {
-                        setErrorMsg("Il numero massimo di riposte è 10");
-                        setNumeroRisposte(10);
-                      }
-                      else
-                        setErrorMsg(false)
-                    }}
-                    type="text"
-                  ></Form.Control>
-                  <Button
-                    variant="outline-grey"
-                    onClick={()=>selezioneNumeroRisposte(numeroRisposte)}
-                  >
-                    {confirmIcon}{" "}
-                  </Button>
-                </Form.Group>
-                {Array.from(risposte).map((el) =>
-                <Form.Group key={el[0]} className="answers">
-                  <Form.Check disabled inline type="checkbox"></Form.Check>
-                  <Form.Control
-                    value={risposte.get(el[0])}
-                    onChange={(e) => {
-                      aggiungiRisposta(el[0],e.target.value);
-                    }}
-                    type="text"
-                  ></Form.Control>
-                </Form.Group>
-            )}
-              </>
-            ) : (
-              <Form.Group>
-              <Form.Check
-              onChange={(e) => {e.target.checked===true ? setMin(1) : setMin(0) }}
-              type="checkbox"
-              label="La domanda è obbligatoria?"
-            ></Form.Check>
-             </Form.Group>
-
-            )}
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Link to="/new_quiz">
-            <Button variant="outline-grey">Close</Button>
+      {props.user && !location.pathname.includes("compilazioni") ? (
+        <>
+          <Link to="/add_question">
+            <Button className="add-task-btn btn-danger circle">+</Button>
           </Link>
-          <Button variant="outline-danger" onClick={(e) => handleSubmit(e)}>
-            Aggiungi domanda
-          </Button>
-        </Modal.Footer>
-      </Modal>
+          <Link to="/">
+            <Button variant="outline-danger" onClick={handlePubblica}>
+              Pubblica
+            </Button>{" "}
+          </Link>
+        </>
+      ) : null}
+      {!location.pathname.includes("compilazioni") ? 
+      <Link to="/">
+        <Button variant="outline-danger" onClick={handleSubmit}>
+          Invia risposte
+        </Button>{" "}
+      </Link> : null}
     </>
   );
 }
+
+
 
 export default MyQuiz;

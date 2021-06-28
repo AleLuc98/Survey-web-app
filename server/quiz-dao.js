@@ -45,14 +45,30 @@ exports.getQuizQuestions = (id) => {
     })
 }
 
+exports.getQuizAnswers = (id_quiz,id_utilizzatore) => {
+    return new Promise((resolve, reject)=> {
+        const sql = "SELECT * FROM risposte WHERE IDQuestionario=? AND IDUtilizzatore=?"
+        db.all(sql, [id_quiz,id_utilizzatore], (err, rows) => {
+            if(err)
+                reject(err)
+            else{
+                const answers = rows.map((a)=>({id:a.ID,testo: a.Testo, id_doamnda: a.IDDOmanda}));
+                resolve(answers)
+            }
+        })
+    })
+}
+
 exports.getQuizTitle = (id) => {
     return new Promise((resolve, reject)=> {
         const sql = "SELECT * FROM questionario WHERE ID=?"
         db.get(sql, id, (err, row) => {
             if(err)
                 reject(err)
-            else if(row)
-                resolve(row.Titolo)
+            else if(row){
+                const quiz = ({titolo: row.Titolo, n: row.NumeroCompilazioni})
+                resolve(quiz)
+            }
             else 
                 resolve(null)    
             })
@@ -126,7 +142,7 @@ exports.pubblicaDomanda = (id,testo,min,max,tipo,pos,risposte) => {
                 {
                     exports.getIDDomanda().then(idR=>{
                         for (let i=0;i<risposte.length;i++)
-                            exports.pubblicaRisposta(risposte[i].testo,idR).catch((err)=>reject(err))
+                            exports.pubblicaRispostaChiusa(risposte[i].testo,idR).catch((err)=>reject(err))
                     })
                     resolve(true)
                 }
@@ -137,7 +153,7 @@ exports.pubblicaDomanda = (id,testo,min,max,tipo,pos,risposte) => {
     })
 }
 
-exports.pubblicaRisposta = (testo,id) => {
+exports.pubblicaRispostaChiusa = (testo,id) => {
     let statement = "INSERT INTO risposte_chiuse (Testo,IDDomanda) VALUES (?,?)"
         let params = [testo,id]
         return new Promise((resolve, reject)=> {
@@ -149,4 +165,59 @@ exports.pubblicaRisposta = (testo,id) => {
                 }
             })
         })
+}
+
+exports.pubblicaRisposta = (testo,id_utilizzatore,id_domanda,id_quiz) => {
+    let statement = "INSERT INTO risposte (Testo,IDUtilizzatore,IDDomanda,IDQuestionario) VALUES (?,?,?,?)"
+    let params = [testo,id_utilizzatore,id_domanda,id_quiz]
+    return new Promise((resolve, reject)=> {
+        db.run(statement, params, (err, result) => {
+            if(err)
+                reject(err)
+            else{
+                resolve (true)
+            }
+        })
+    })
+}
+
+exports.compilazione = (id,n) => {
+    let statement = "UPDATE questionario SET NumeroCompilazioni = ? WHERE ID =?"
+    let params = [n+1,id]
+    return new Promise((resolve, reject)=> {
+        db.get(statement, params, (err, row) => {
+            if(err)
+                reject(err)
+            else{
+                resolve(true)
+            }
+        })
+    })
+}
+
+exports.getQuizID = (id) => {
+    let statement = "SELECT NumeroCompilazioni FROM questionario WHERE ID=?"
+    let params = [id]
+    return new Promise((resolve, reject)=> {
+        db.get(statement, params, (err, row) => {
+            if(err)
+                reject(err)
+            else{
+                resolve(row["NumeroCompilazioni"])                
+            }
+        })
+    })
+}
+
+exports.getUtilizzatore = () => {
+    return new Promise((resolve, reject)=> {
+        const sql = "SELECT max(IDUtilizzatore) FROM risposte"
+        db.get(sql, (err, row) => {
+            if(err)
+                reject(err)
+            else{
+                resolve(row["max(IDUtilizzatore)"])
+            }
+        })
+    })
 }

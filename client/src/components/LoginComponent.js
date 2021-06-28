@@ -1,4 +1,4 @@
-import { Form, Button, Alert, Col, Container, Row } from 'react-bootstrap';
+import { Form, Button, Alert,Container } from 'react-bootstrap';
 import { useState } from 'react';
 
 function LoginForm(props) {
@@ -12,9 +12,9 @@ function LoginForm(props) {
       const credentials = { username: username, password: password };
       
       let valid = true;
-      if (username === '' || password === '' || password.length < 6) {
+      if (username === '' || password === '' || password === undefined || password.length < 6) {
         valid = false;
-        setErrorMessage('Email cannot be empty and password must be at least six character long.');
+        setErrorMessage('La email non può essere vuota e la password deve essere di almeno 6 caratteri');
       }
       
       if(valid)
@@ -25,9 +25,10 @@ function LoginForm(props) {
   };
 
   return (
-        <Form>
-        {(props.errors && props.errors.type === "login" && errorMessage === "") ?  <Alert variant='danger'>{"Incorrect username/password"}</Alert> : ''}
-        {errorMessage.count > 0 ? <Alert variant='danger'>{"Some errors occured, please check the prompted fields"}</Alert> : ''}
+        <Container>
+        {(props.errors && props.errors.type === "login" && errorMessage === "") ?  <Alert variant='danger'>{"username/password errati"}</Alert> : ''}
+        {errorMessage.length > 0 ? <Alert variant='danger'>{errorMessage}</Alert> : ''}
+        <Form className="login">
           <Form.Group controlId="username">
             <Form.Label>email</Form.Label>
             <Form.Control
@@ -46,6 +47,7 @@ function LoginForm(props) {
           </Form.Group>
           <Button variant="outline-danger" onClick={handleSubmit}>Login</Button>
         </Form>
+        </Container>
   );
 }
 

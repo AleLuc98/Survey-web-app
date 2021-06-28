@@ -1,7 +1,7 @@
-import { ListGroup, Modal, Button, Form , Alert, Table, Spinner} from 'react-bootstrap'
+import { Button , Alert, Table, Spinner} from 'react-bootstrap'
 import React, { useEffect, useState } from 'react'
 import { arrowIcon } from '../icons';
-import { Link, Route, useLocation, Redirect,useHistory } from 'react-router-dom';
+import { Link} from 'react-router-dom';
 import API from '../API';
 
 function QuizSelector() {

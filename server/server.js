@@ -83,6 +83,11 @@ app.get('/api/quiz_:id', (req,res) => {
 }
 )
 
+app.get('/api/quizAnswers_:id/:utilizzatore', (req,res) => {
+  quizDao.getQuizAnswers(req.params.id,req.params.utilizzatore).then(response => res.send(response)).catch(() => res.status(500).end());
+}
+)
+
 app.get('/api/quizTitle_:id', (req,res) => {
   quizDao.getQuizTitle(req.params.id).then(response => res.send(response)).catch(() => res.status(500).end());
 }
@@ -112,6 +117,22 @@ app.post('/api/pubblicaDomande', async (req,res) => {
       .catch(() => res.status(500).end());
 }
 res.send(true)
+}
+)
+
+app.post('/api/pubblicaRisposte', async(req,res) => {
+  const quiz = req.body.quiz;
+  const risposte = req.body.risposte;
+  let utilizzatore = await quizDao.getUtilizzatore()
+  if (utilizzatore===null)
+    utilizzatore = 0
+  for (let i=0;i<quiz.length;i++){
+    await quizDao.pubblicaRisposta(risposte[i][1],utilizzatore+1,quiz[i].id,req.body.id)
+      .catch(() => res.status(500).end())
+    }
+  const n = await quizDao.getQuizID(req.body.id).catch(() => res.status(500).end()) 
+  quizDao.compilazione(req.body.id,n).then(response => res.send(response)).catch(() => res.status(500).end())
+  
 }
 )
 

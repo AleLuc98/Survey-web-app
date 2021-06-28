@@ -90,6 +90,27 @@ const getQuizQuestions = async (id) => {
   }
 }
 
+const getQuizAnswers = async (id,utilizzatore) => {
+  let response = await fetch(BASEURL +'/quizAnswers_'+id+'/'+utilizzatore, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if(response.ok) {
+    const answers = await response.json();
+    return answers
+  } 
+  else {
+    try {
+      const errDetail = await response.json();
+      throw errDetail.message;
+    }
+    catch(err) {
+      throw err;
+    }
+  }
+}
 
 const getQuizTitle = async (id) => {
   let response = await fetch(BASEURL +'/quizTitle_'+id, {
@@ -99,8 +120,8 @@ const getQuizTitle = async (id) => {
     },
   });
   if(response.ok) {
-    const title = await response.text();
-    return title
+    const quiz = await response.json();
+    return quiz
   } 
   else {
     try {
@@ -171,10 +192,26 @@ const pubblicaQuiz = async (title, quiz) => {
   }
 };
 
-
-
-
+const pubblicaRisposte = async (quiz,risposte,id) => {
+  let response = await fetch(BASEURL + '/pubblicaRisposte', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({id: id, quiz: quiz, risposte: Array.from(risposte)}),
+  });
+  if (response.ok) {
+    return true
+  } else {
+    try {
+      const errDetail = await response.json();     
+      throw errDetail.message;
+    } catch (err) {
+      throw err;
+    }
+  }
+};
   
   
-const API = {logIn, getQuiz, getQuizTitle, getMyQuiz, getQuizQuestions, getAnswers, pubblicaQuiz};
+const API = {logIn, getQuiz, getQuizTitle, getMyQuiz, getQuizQuestions, getQuizAnswers, getAnswers, pubblicaQuiz, pubblicaRisposte};
   export default API;

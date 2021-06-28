@@ -1,27 +1,17 @@
 import {
-  ListGroup,
-  Modal,
   Button,
-  Form,
   Alert,
   Table,
   Spinner,
-  Col,
 } from "react-bootstrap";
 import React, { useState, useEffect } from "react";
 import { arrowIcon } from "../icons";
 import {
   Link,
-  Route,
-  Router,
-  useLocation,
-  Redirect,
-  useHistory,
 } from "react-router-dom";
 import API from "../API";
 
 function QuizViewer(props) {
-  const history = useHistory();
   const [quiz, setQuiz] = useState();
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('') ;
@@ -67,9 +57,10 @@ function QuizViewer(props) {
                 <td>{q.titolo}</td>
                 <td>{q.compilazioni}</td>
                 <td>
-                  <Link to="/add">
+                  {q.compilazioni > 0 ?
+                  <Link to={"/compilazioni_"+q.id+"/utilizzatore_1"}>
                     <Button variant="outline-grey">{arrowIcon}</Button>
-                  </Link>
+                  </Link> : null}
                 </td>
               </tr>
             ))
