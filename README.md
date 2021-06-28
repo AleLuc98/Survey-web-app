@@ -8,7 +8,7 @@
 - Route `/quiz_:id`: page that shows the survey with id = :id to the user
 - Route `/new_quiz`: page that allows the creation of a new survey
 - Route `/add_question`: page that allows the creation of a new question
-- Route `/compilazioni_:id/utilizzatore_:user`: page that shows the answers to the survey with id = :id given by the user = :user (the local id of the user, local means that if for example utilizzatore=2 the server is retriving the answers of the second, in time order, user who filled that survey)
+- Route `/compilazioni_:id/utilizzatore_:user`: page that shows the answers to the survey with id = :id given by the user = :user (the local id of the user. Local means that if for example utilizzatore=2, the server is retriving the answers of the second user who filled the survey (second in time order))
 
 
 ## API Server
@@ -74,7 +74,7 @@
 
   Description: Get the list of answers to the requested survey given by the requested user 
 
-  Param: id (the id of the survey), utilizzatore (the local id of the user, local means that if for example utilizzatore=2 the server is retriving the answers of the second, in time order, user who filled that survey)
+  Param: id (the id of the survey), utilizzatore (the local id of the user. Local means that if for example utilizzatore=2, the server is retriving the answers of the second user who filled the survey (second in time order))
 
   Request Body : None
 
