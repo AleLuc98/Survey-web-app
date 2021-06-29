@@ -262,7 +262,7 @@
 
 ## Screenshot
 
-![Screenshot](./img/screenshot.jpg)
+![Screenshot](./client/public/images/Screenshot.png/)
 
 ## Users Credentials
 
