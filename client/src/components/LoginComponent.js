@@ -38,7 +38,7 @@ function LoginForm(props) {
 
   return (
         <Container>
-        {(props.errors && props.errors.type === "login" && errorMessage === "") ?  <Alert variant='danger'>{"username/password errati"}</Alert> : ''}
+        {(props.errors && errorMessage === "") ?  <Alert variant='danger'>{"username/password errati"}</Alert> : ''}
         {errorMessage.length > 0 ? <Alert variant='danger'>{errorMessage}</Alert> : ''}
         <Form className="login">
           <Form.Group controlId="username">
